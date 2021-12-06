@@ -59,9 +59,9 @@
 		 ***************************************/
 
 		//override this.dimensions to include only numeric dimensions
-		this.dimensions = this.dimensions.filter(function(d) {
-			return !self.db.isStringDimension(d);
-		});
+		// this.dimensions = this.dimensions.filter(function(d) {
+		// 	return !self.db.isStringDimension(d);
+		// });
 
 		/** @type {number[]} Indices of the similar results to the last query */
 		this.results = [];
@@ -94,9 +94,16 @@
 		//So create scales to scale a slider's value to a value in its dimension
 		this.scales = {};
 		this.dimensions.forEach(function(d) {
-			self.scales[d] = d3.scaleLinear()
-				.domain([0,100])
-				.range(self.db.dimensionDomains[d]);
+			if (self.db.isStringDimension(d)) {
+				self.scales[d] = null;
+			}
+			else {
+				self.scales[d] = d3.scaleLinear()
+					.domain([0,100])
+					.range(self.db.dimensionDomains[d]);
+
+			}
+
 		});
 
 		/***************************************
@@ -169,8 +176,10 @@
 				self.updateBounds();
 				self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
 			});
-		//slider
-		this.rows.append('input')
+		//sliders for numeric variables
+		this.rows.filter(
+			 function(d, i){return !self.db.isStringDimension(self.dimensions[i]);})
+			.append('input')
 			.attr('type','range')
 			.attr('min',0)
 			.attr('max',100)
@@ -185,6 +194,19 @@
 				self.updateBounds();
 				self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
 			});
+		//textboxes for string variables
+		this.rows.filter(function(d, i){return self.db.isStringDimension(self.dimensions[i]);})
+			.append('input')
+			.attr('type','text');
+			// .each(function() {this.style.cssFloat = 'right';})
+		    // .on('input',function(d){
+			// 	var check = d3.select(this.parentNode).select('input[type="checkbox"]');
+			// 	if (!check.node().checked)
+			// 		check.node().checked = true;
+			// 	self.custom.data[d] = self.scales[d](this.value);
+			// 	self.updateBounds();
+			// 	self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
+			// });
 
 	}
 	//establish prototype chain
