@@ -58,10 +58,13 @@
 		 * DATA
 		 ***************************************/
 
-		//override this.dimensions to include only numeric dimensions
-		// this.dimensions = this.dimensions.filter(function(d) {
-		// 	return !self.db.isStringDimension(d);
-		// });
+		// Handle numeric and string dimensions separately
+		this.numeric_dimensions = this.dimensions.filter(function(d) {
+			return !self.db.isStringDimension(d);
+		});
+		this.string_dimensions = this.dimensions.filter(function(d) {
+			return self.db.isStringDimension(d);
+		});
 
 		/** @type {number[]} Indices of the similar results to the last query */
 		this.results = [];
@@ -93,17 +96,10 @@
 		//Input sliders for each dimension range from 0 to 100
 		//So create scales to scale a slider's value to a value in its dimension
 		this.scales = {};
-		this.dimensions.forEach(function(d) {
-			if (self.db.isStringDimension(d)) {
-				self.scales[d] = null;
-			}
-			else {
-				self.scales[d] = d3.scaleLinear()
-					.domain([0,100])
-					.range(self.db.dimensionDomains[d]);
-
-			}
-
+		this.numeric_dimensions.forEach(function(d) {
+			self.scales[d] = d3.scaleLinear()
+				.domain([0,100])
+				.range(self.db.dimensionDomains[d]);
 		});
 
 		/***************************************
@@ -165,10 +161,16 @@
 		this.rows.append('input')
 			.attr('type','checkbox')
 			.style('position','absolute')
-			.on('input',function(d) {
+			.on('input',function(d, i) {
 				if (this.checked) {
+					// todo theres probably a cleaner way
 					var slider = d3.select(this.parentNode).select('input[type="range"]');
-					self.custom.data[d] = self.scales[d](slider.node().value);
+					var text = d3.select(this.parentNode).select('input[type="text"]');
+					if (slider.node() !== null) {
+						self.custom.data[d] = self.scales[d](slider.node().value);
+					} else if (text) {
+						self.custom.data[d] = text.node().value;
+					}
 				}
 				else {
 					delete self.custom.data[d];
@@ -197,16 +199,15 @@
 		//textboxes for string variables
 		this.rows.filter(function(d, i){return self.db.isStringDimension(self.dimensions[i]);})
 			.append('input')
-			.attr('type','text');
-			// .each(function() {this.style.cssFloat = 'right';})
-		    // .on('input',function(d){
-			// 	var check = d3.select(this.parentNode).select('input[type="checkbox"]');
-			// 	if (!check.node().checked)
-			// 		check.node().checked = true;
-			// 	self.custom.data[d] = self.scales[d](this.value);
-			// 	self.updateBounds();
-			// 	self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
-			// });
+			.attr('type','text')
+		    .on('input',function(d){
+				var check = d3.select(this.parentNode).select('input[type="checkbox"]');
+				if (!check.node().checked)
+					check.node().checked = true;
+				self.custom.data[d] = this.value;
+				self.updateBounds();
+				self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
+			});
 
 	}
 	//establish prototype chain
@@ -232,14 +233,22 @@
 		var self = this;
 		var threshold = this.thresholdNode.value;
 		//average difference along each dimension
+		// todo: update denominator to only reflect included numeric features
 		var avg = (threshold/d3.keys(this.custom.data).length)*100;
 		this.upper.data = {};
 		this.lower.data = {};
-		this.dimensions.forEach(function(d) {
+		this.numeric_dimensions.forEach(function(d) {
 			if (self.custom.data[d] !== undefined) {
 				var s = self.scales[d];
 				self.lower.data[d] = s(Math.max(s.invert(self.custom.data[d])-avg,0));
 				self.upper.data[d] = s(Math.min(s.invert(self.custom.data[d])+avg,100));
+			}
+		});
+		this.numeric_dimensions.forEach(function(d) {
+			if (self.custom.data[d] !== undefined) {
+				var s = self.custom.data[d];
+				self.lower.data[d] = s;
+				self.upper.data[d] = s;
 			}
 		});
 	}
