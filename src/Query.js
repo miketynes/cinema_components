@@ -58,6 +58,10 @@
 		 * DATA
 		 ***************************************/
 
+		// Exclude files
+		this.dimensions = this.db.dimensions.filter(function(d) {
+			return !d.includes("FILE");
+		});
 		// Handle numeric and string dimensions separately
 		this.numeric_dimensions = this.dimensions.filter(function(d) {
 			return !self.db.isStringDimension(d);
