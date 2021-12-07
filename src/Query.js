@@ -235,7 +235,7 @@
 	 */
 	CINEMA_COMPONENTS.Query.prototype.updateBounds = function() {
 		var self = this;
-		var threshold = this.thresholdNode.value;
+		var threshold = Number(this.thresholdNode.value);
 		//average difference along each dimension
 		// todo: update denominator to only reflect included numeric features
 		var avg = (threshold/d3.keys(this.custom.data).length)*100;
@@ -248,7 +248,7 @@
 				self.upper.data[d] = s(Math.min(s.invert(self.custom.data[d])+avg,100));
 			}
 		});
-		this.numeric_dimensions.forEach(function(d) {
+		this.string_dimensions.forEach(function(d) {
 			if (self.custom.data[d] !== undefined) {
 				var s = self.custom.data[d];
 				self.lower.data[d] = s;
