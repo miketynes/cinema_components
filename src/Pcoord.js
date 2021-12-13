@@ -256,8 +256,11 @@
 			.classed('axis',true)
 			.each(function(d) {
 				d3.select(this).call(d3.axisLeft().scale(self.y[d]));
-				if (!self.db.isStringDimension(d))
-					self.addNaNExtensionToAxis(this);
+				if (!self.db.isStringDimension(d)) {
+					self.addNaNExtensionToAxis(this)
+				} else {
+					self.shortenStringTicks(this);
+				}
 			});
 		var labels = this.axes.append('g')
 			.classed('axisLabel',true)
@@ -284,6 +287,7 @@
 			.attr('width',function(d){return d.width - 6;})
 			.attr('height',function(d){return d.height;});
 		//Add brush group to each axis group
+		// todo: only numeric axes?
 		this.axes.append('g')
 			.classed('brush',true)
 			.each(function(){d3.select(this).call(self.brush);});
@@ -292,6 +296,24 @@
 	//establish prototype chain
 	CINEMA_COMPONENTS.Pcoord.prototype = Object.create(CINEMA_COMPONENTS.Component.prototype);
 	CINEMA_COMPONENTS.Pcoord.prototype.constructor = CINEMA_COMPONENTS.Pcoord;
+
+	/**
+	 * Shorten string ticks
+	 * @author Michael F. Tynes
+	 * @param {DOM} axis - an axis DOM object with string tick labels
+	 * This could in principle be handled in CSS
+	 * But the CSS for SVG and Canvas may diverge
+	 */
+	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis) {
+			for (var child of axis.childNodes){
+				var cls = child.getAttribute('class')
+				if (cls === 'tick') {
+					var text = child.childNodes[1];
+					var raw = text.innerHTML;
+					text.innerHTML = raw.slice(0,10) + '...';
+				}
+			}
+		};
 
 	/**
 	 * Add an additional line segment and tick to the end of an axis to represent the area
@@ -358,6 +380,9 @@
 					.attr('d',"M0.5,"+String(self.internalHeight-self.NaNMargin+0.5)+"V"+String(self.internalHeight-0.5));
 				d3.select(this).select('.NaNExtensionTick')
 					.attr('transform',"translate(0,"+String(self.internalHeight-0.5)+")");
+			} else {
+				// `this` is an axis group, the first child is an axis
+				self.shortenStringTicks(this.childNodes[0])
 			}
 		});
 
