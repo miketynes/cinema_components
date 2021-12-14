@@ -63,3 +63,12 @@
 .CINEMA_COMPONENT.PCOORD.SVG .axis .NaNExtensionTick text{
 	fill: rgb(196, 23, 57);
 }
+
+.CINEMA_COMPONENT.PCOORD.SVG .mouseovertext {
+	fill:currentColor;
+	display:none;
+}
+
+.CINEMA_COMPONENT.PCOORD.SVG .mouseovertext:hover {
+	display:block;
+}
