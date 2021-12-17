@@ -301,16 +301,29 @@
 	 * Shorten string ticks
 	 * @author Michael F. Tynes
 	 * @param {DOM} axis - an axis DOM object with string tick labels
+	 * @param {integer} axis - an axis DOM object with string tick labels
 	 * This could in principle be handled in CSS
 	 * But the CSS for SVG and Canvas may diverge
 	 */
-	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis) {
+	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis, max_length=10) {
 			for (var child of axis.childNodes){
 				var cls = child.getAttribute('class')
 				if (cls === 'tick') {
+					child.setAttribute('pointer-events', 'all')
 					var text = child.childNodes[1];
 					var raw = text.innerHTML;
-					text.innerHTML = raw.slice(0,10) + '...';
+					if (raw.length > max_length) {
+						text.innerHTML = raw.slice(0, 10) + '...'
+						text.setAttribute('class', 'ticklabel')
+					}
+					// assuming the first two children are the tick and the text
+					if (child.childNodes.length < 3) {
+						var text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+						text2.setAttribute('class', 'mouseovertext');
+						//text2.setAttribute('display', 'none');
+						text2.innerHTML = raw;
+						child.appendChild(text2);
+					}
 				}
 			}
 		};
@@ -401,6 +414,7 @@
 			});
 		});
 		this.dontUpdateSelectionOnBrush = false;
+		d3.selectAll('mousovertext').each(function() {this.parentElement.appendChild(this);})
 	}
 
 	/**
