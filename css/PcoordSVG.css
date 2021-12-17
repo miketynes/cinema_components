@@ -64,13 +64,24 @@
 	fill: rgb(196, 23, 57);
 }
 
-.CINEMA_COMPONENT.PCOORD.SVG .mouseovertext {
-	fill:currentColor;
+
+
+
+.CINEMA_COMPONENT.PCOORD.SVG .mouseoverbg{
+	fill:darkslategrey;
 	display:none;
-	x:"-25";
-	dy:"0.32em";
 }
 
-.CINEMA_COMPONENT.PCOORD.SVG .ticklabel:hover + .mouseovertext {
+.CINEMA_COMPONENT.PCOORD.SVG .ticklabel:hover + .mouseoverbg {
 	display:block;
 }
+
+.CINEMA_COMPONENT.PCOORD.SVG .mouseovertext {
+	fill:whitesmoke;
+	display:none;
+}
+
+.CINEMA_COMPONENT.PCOORD.SVG .mouseoverbg:hover + .mouseovertext {
+	display:block;
+}
+

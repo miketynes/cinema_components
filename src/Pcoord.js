@@ -298,6 +298,35 @@
 	CINEMA_COMPONENTS.Pcoord.prototype.constructor = CINEMA_COMPONENTS.Pcoord;
 
 	/**
+	 * Background for SVG text
+	 * @param elem
+	 */
+	CINEMA_COMPONENTS.Pcoord.prototype.makeBG = function(elem) {
+		  var svgns = "http://www.w3.org/2000/svg"
+		  var bounds = elem.getBBox()
+		  var bg = document.createElementNS(svgns, "rect")
+		  bg.setAttribute('class', 'mouseoverbg')
+		  var style = getComputedStyle(elem)
+		  var padding_top = parseInt(style["padding-top"])
+		  var padding_left = parseInt(style["padding-left"])
+		  var padding_right = parseInt(style["padding-right"])
+		  var padding_bottom = parseInt(style["padding-bottom"])
+		  bg.setAttribute("x", bounds.x - 9)
+		  bg.setAttribute("y", bounds.y - 1)
+		  bg.setAttribute("width", bounds.width + padding_left + padding_right)
+		  bg.setAttribute("height", bounds.height + padding_top + padding_bottom)
+		  bg.setAttribute("fill", style["background-color"])
+		  // bg.setAttribute("rx", style["border-radius"])
+		  // bg.setAttribute("stroke-width", style["border-top-width"])
+		  // bg.setAttribute("stroke", style["border-top-color"])
+		  // if (elem.hasAttribute("transform")) {
+		  // 	bg.setAttribute("transform", elem.getAttribute("transform"))
+		  // }
+		  elem.parentNode.insertBefore(bg, elem)
+		}
+
+
+	/**
 	 * Shorten string ticks
 	 * @author Michael F. Tynes
 	 * @param {DOM} axis - an axis DOM object with string tick labels
@@ -305,28 +334,30 @@
 	 * This could in principle be handled in CSS
 	 * But the CSS for SVG and Canvas may diverge
 	 */
-	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis, max_length=10) {
-			for (var child of axis.childNodes){
-				var cls = child.getAttribute('class')
-				if (cls === 'tick') {
-					child.setAttribute('pointer-events', 'all')
-					var text = child.childNodes[1];
-					var raw = text.innerHTML;
-					if (raw.length > max_length) {
-						text.innerHTML = raw.slice(0, 10) + '...'
-						text.setAttribute('class', 'ticklabel')
-					}
-					// assuming the first two children are the tick and the text
-					if (child.childNodes.length < 3) {
-						var text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-						text2.setAttribute('class', 'mouseovertext');
-						//text2.setAttribute('display', 'none');
-						text2.innerHTML = raw;
-						child.appendChild(text2);
-					}
+	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis, max_length= 10) {
+		self = CINEMA_COMPONENTS.Pcoord.prototype
+		for (var child of axis.childNodes){
+			var cls = child.getAttribute('class')
+			if (cls === 'tick') {
+				child.setAttribute('pointer-events', 'all')
+				var text = child.childNodes[1];
+				var raw = text.innerHTML;
+				if (raw.length > max_length) {
+					text.innerHTML = raw.slice(0, 10) + '...'
+					text.setAttribute('class', 'ticklabel')
+				}
+				// assuming the first two children are the tick and the text
+				if (child.childNodes.length < 3) {
+					var text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+					text2.setAttribute('class', 'mouseovertext');
+					//text2.setAttribute('display', 'none');
+					text2.innerHTML = raw;
+					child.appendChild(text2);
+					self.makeBG(text2)
 				}
 			}
-		};
+		}
+	};
 
 	/**
 	 * Add an additional line segment and tick to the end of an axis to represent the area
