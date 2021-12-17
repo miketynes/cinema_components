@@ -309,6 +309,7 @@
 			for (var child of axis.childNodes){
 				var cls = child.getAttribute('class')
 				if (cls === 'tick') {
+					child.setAttribute('pointer-events', 'all')
 					var text = child.childNodes[1];
 					var raw = text.innerHTML;
 					if (raw.length > max_length) {

@@ -345,7 +345,7 @@
 			var dist = 0; //manhattan distance
 			self.dimensions.forEach(function(d) {
 				if (query[d] !== undefined) {
-					//On string dimensions, the distance is considered 0 if the strings are the same, otherwise 1
+					//On string dimensions, the distance is considered 0 if the regex matches otherwise Infinity
 					if (self.isStringDimension(d)) {
 						var this_dist = (RegExp(query[d]).test(row[d]) ? 0 : Infinity);
 						dist += this_dist;

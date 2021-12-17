@@ -209,6 +209,9 @@
 				if (!check.node().checked)
 					check.node().checked = true;
 				self.custom.data[d] = this.value;
+				/*this should probably trigger different functions
+				  but I'm not 100% sure where the filtering happens of the image spread?
+				 */
 				self.updateBounds();
 				self.dispatch.call('customchange',self,[self.custom,self.upper,self.lower]);
 			});
