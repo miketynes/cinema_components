@@ -314,8 +314,8 @@
 					var raw = text.innerHTML;
 					if (raw.length > max_length) {
 						text.innerHTML = raw.slice(0, 10) + '...'
+						text.setAttribute('class', 'ticklabel')
 					}
-					// this is really SVG specific, belongs there.
 					// assuming the first two children are the tick and the text
 					if (child.childNodes.length < 3) {
 						var text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');

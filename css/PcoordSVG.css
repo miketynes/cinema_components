@@ -67,8 +67,10 @@
 .CINEMA_COMPONENT.PCOORD.SVG .mouseovertext {
 	fill:currentColor;
 	display:none;
+	x:"-25";
+	dy:"0.32em";
 }
 
-.CINEMA_COMPONENT.PCOORD.SVG .mouseovertext:hover {
+.CINEMA_COMPONENT.PCOORD.SVG .ticklabel:hover + .mouseovertext {
 	display:block;
 }
