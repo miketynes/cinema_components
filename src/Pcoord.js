@@ -202,10 +202,11 @@
 		this.brushnodes = {}
 		/** @type {d3.brushY} The brushes for each axis */
 		this.newBrush = function(g){
-			var dim = g.node().getAttribute('dimension')
+			var dim = g.node().getAttribute('dimension');
+			var axis = dim;
 			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
-			var node = 'brush' + Object.keys(self.dimensions).indexOf(dim) + '-' + id;
-			var brush = d3.brushY()
+			var node = 'brush-' + self.dimensions.indexOf(dim) + '-' + id;
+			var brush = d3.brushY();
 
 			if (self.brushes[dim]) {
 				self.brushes[dim].push({id, brush, node})
@@ -214,7 +215,39 @@
 			}
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-				.on('brush', self.axisBrush)
+				.on('brush', self.axisBrush) // todo: update axisBrush to look inside of brushgroups
+				.on('brush end', function() {
+				  // Figure out if our latest brush has a selection
+				  const lastBrushID = self.brushes[axis][self.brushes[axis].length - 1].id;
+				  const lastBrush = document.getElementById(
+					'brush-' +
+					  self.dimensions.indexOf(axis) +
+					  '-' +
+					  lastBrushID
+				  );
+				  const selection = d3.brushSelection(lastBrush);
+
+				  if (
+					selection !== undefined &&
+					selection !== null &&
+					selection[0] !== selection[1]
+				  ) {
+					self.newBrush(g);
+					self.drawBrushes(g);
+					self.axisBrush();
+				  // } else { / todo: adding a reset method may be nice
+					// if (
+					//   d3.event.sourceEvent &&
+					//   d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
+					//   d3.event.selection === null
+					// ) {
+					//   pc.brushReset(axis);
+					// }
+				  // }
+
+				  //d3.events.call('brushend', pc, config.brushed);
+					}
+				});
 			return brush
 		};
 
@@ -238,7 +271,7 @@
 				.attr('class', 'brush')
 				.attr('dimension', axis)
 				.attr('id',
-					  b => 'brush-' + Object.keys(self.dimensions).indexOf(axis) + '-' + b.id
+					  b => 'brush-' + self.dimensions.indexOf(axis) + '-' + b.id
 				)
 				.each(function(brushObject) {
 			 		 brushObject.brush(d3.select(this));
