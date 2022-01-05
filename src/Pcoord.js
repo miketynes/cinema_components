@@ -214,7 +214,7 @@
 			}
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-				.on('brush',self.axisBrush)
+				.on('brush', self.axisBrush)
 			return brush
 		};
 
@@ -233,18 +233,18 @@
 			var brushes = self.brushes[dim];
 		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
 		    brushSelection
-		    	.enter() // todo this doesnt work on init. do we need to add an empty .brush g first?
+		    	.enter() // todo1 this doesnt work on init. do we need to add an empty .brush g first?
 			    .insert('g', '.brush')
 				.attr('class', 'brush')
 				.attr('dimension', axis)
 				.attr('id',
-					  b => 'brush-' + Object.keys(config.dimensions).indexOf(axis) + '-' + b.id
+					  b => 'brush-' + Object.keys(self.dimensions).indexOf(axis) + '-' + b.id
 				)
 				.each(function(brushObject) {
-			 		 brushObject.brush(select(this));
+			 		 brushObject.brush(d3.select(this));
 				});
 		  	brushSelection.each(function(brushObject) {
-				select(this)
+				d3.select(this)
 			  		.attr('class', 'brush')
 			  		.selectAll('.overlay')
 			  		.style('pointer-events', function() {
