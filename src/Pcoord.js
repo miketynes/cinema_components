@@ -542,21 +542,22 @@
 		var newSelection = [];
 		this.db.data.forEach(function(d,i) {
 			var selected = true;
-			for (var p in self.dimensions) {
-				var dim = self.dimensions[p]
-				var in_any_brush_of_dim = false;
-				for (var extent of self.brushExtents[dim]) {
-					var y = self.getYPosition(self.dimensions[p],d);
-					if (extent) {
-						if (extent[0] <= y && y <= extent[1]) {
-							in_any_brush_of_dim = true;
-							break
+			for (var dim of self.dimensions) {
+				if (self.brushExtents[dim].length > 0) {
+					var in_any_brush_of_dim = false;
+					for (var extent of self.brushExtents[dim]) {
+						var y = self.getYPosition(dim, d);
+						if (extent) {
+							if (extent[0] <= y && y <= extent[1]) {
+								in_any_brush_of_dim = true;
+								break
+							}
 						}
 					}
+					selected = selected && in_any_brush_of_dim;
+					if (!selected)
+						break
 				}
-				selected = selected && in_any_brush_of_dim;
-				if (!selected)
-					break
 			}
 			if (selected)
 				newSelection.push(i)
