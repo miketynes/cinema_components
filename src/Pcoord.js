@@ -198,11 +198,15 @@
 				self.updateSelection();
 		}
 
+		this.brushes = {}
+		this.brushnodes = {}
 		/** @type {d3.brushY} The brushes for each axis */
-		this.brush = d3.brushY()
-			.extent([[-8,0],[8,this.internalHeight]])
+		this.brush = function(g){
+			return d3.brushY()
+			.extent([[-8,0],[8,self.internalHeight]])
 			.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-			.on('start brush',this.axisBrush);
+			.on('brush',self.axisBrush)(g)
+		};
 
 		/***************************************
 		 * DOM Content
@@ -287,10 +291,12 @@
 			.attr('width',function(d){return d.width - 6;})
 			.attr('height',function(d){return d.height;});
 		//Add brush group to each axis group
-		// todo: only numeric axes?
-		this.axes.append('g')
-			.classed('brush',true)
-			.each(function(){d3.select(this).call(self.brush);});
+		this.axes
+			.data(this.dimensions)
+			.append('g')
+			.classed('brushgroup',true)
+			.attr('dimension', function(d) {return d})
+			.each(function() {d3.select(this).call(self.brush);} );
 
 	};
 	//establish prototype chain
