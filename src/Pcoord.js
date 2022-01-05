@@ -201,27 +201,62 @@
 		this.brushes = {}
 		this.brushnodes = {}
 		/** @type {d3.brushY} The brushes for each axis */
-		this.brush = function(g){
-			// todo now add logic that either creates a new brush for each axis
-			// or moves the existing one.
-			// essentially I think this needs look like the newBrush function from
-			// the fat dog repo
-			// we need to now add dom manipulation, which happens in the drawBrushes function
-			// of that repo
+		this.newBrush = function(g){
 			var dim = g.node().getAttribute('dimension')
 			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
 			var node = 'brush' + Object.keys(self.dimensions).indexOf(dim) + '-' + id;
 			var brush = d3.brushY()
-				.extent([[-8,0],[8,self.internalHeight]])
-				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-				.on('brush',self.axisBrush)
 
 			if (self.brushes[dim]) {
 				self.brushes[dim].push({id, brush, node})
 			} else {
 				self.brushes[dim] = [{id, brush, node}]
 			}
-			return brush(g)
+			brush.extent([[-8,0],[8,self.internalHeight]])
+				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
+				.on('brush',self.axisBrush)
+			return brush
+		};
+
+		this.brushFor = function(brushGroup) {
+			// initialize a brush for the brush group corresponding to a dimension
+
+		  self.newBrush(brushGroup);
+		  self.drawBrushes(brushGroup);
+		};
+
+		this.drawBrushes = (brushGroup) => {
+			// draw the brushes for a given brushGroup corresponding to a dimension
+			// wip refactor from dog repo
+			var dim = brushGroup.node().getAttribute('dimension');
+			var axis = dim;
+			var brushes = self.brushes[dim];
+		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
+		    brushSelection
+		    	.enter() // todo this doesnt work on init. do we need to add an empty .brush g first?
+			    .insert('g', '.brush')
+				.attr('class', 'brush')
+				.attr('dimension', axis)
+				.attr('id',
+					  b => 'brush-' + Object.keys(config.dimensions).indexOf(axis) + '-' + b.id
+				)
+				.each(function(brushObject) {
+			 		 brushObject.brush(select(this));
+				});
+		  	brushSelection.each(function(brushObject) {
+				select(this)
+			  		.attr('class', 'brush')
+			  		.selectAll('.overlay')
+			  		.style('pointer-events', function() {
+			  			const brush = brushObject.brush;
+			  			if (brushObject.id === brushes.length - 1 && brush !== undefined) {
+			  				return 'all';
+			  			} else {
+			  				return 'none';
+			  			}
+			  		});
+		  	});
+		  	brushSelection.exit().remove();
 		};
 
 		/***************************************
@@ -312,7 +347,7 @@
 			.append('g')
 			.classed('brushgroup',true)
 			.attr('dimension', function(d) {return d})
-			.each(function() {d3.select(this).call(self.brush);} );
+			.each(function() {d3.select(this).call(self.brushFor);} );
 
 	};
 	//establish prototype chain
