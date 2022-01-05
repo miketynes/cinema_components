@@ -541,19 +541,25 @@
 		var self = this;
 		var newSelection = [];
 		this.db.data.forEach(function(d,i) {
-			var selected = false;
+			var selected = true;
 			for (var p in self.dimensions) {
 				var dim = self.dimensions[p]
+				var in_any_brush_of_dim = false;
 				for (var extent of self.brushExtents[dim]) {
-						if (extent) {
-							var y = self.getYPosition(self.dimensions[p],d);
-							selected = selected && extent[0] <= y && y <= extent[1];
-						if (selected)
-							newSelection.push(i);
-							break;
+					var y = self.getYPosition(self.dimensions[p],d);
+					if (extent) {
+						if (extent[0] <= y && y <= extent[1]) {
+							in_any_brush_of_dim = true;
+							break
+						}
 					}
 				}
+				selected = selected && in_any_brush_of_dim;
+				if (!selected)
+					break
 			}
+			if (selected)
+				newSelection.push(i)
 		});
 		if (!arraysEqual(this.selection,newSelection) || force) {
 			this.selection = newSelection;
