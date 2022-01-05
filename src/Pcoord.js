@@ -202,10 +202,26 @@
 		this.brushnodes = {}
 		/** @type {d3.brushY} The brushes for each axis */
 		this.brush = function(g){
-			return d3.brushY()
-			.extent([[-8,0],[8,self.internalHeight]])
-			.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-			.on('brush',self.axisBrush)(g)
+			// todo now add logic that either creates a new brush for each axis
+			// or moves the existing one.
+			// essentially I think this needs look like the newBrush function from
+			// the fat dog repo
+			// we need to now add dom manipulation, which happens in the drawBrushes function
+			// of that repo
+			var dim = g.node().getAttribute('dimension')
+			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
+			var node = 'brush' + Object.keys(self.dimensions).indexOf(dim) + '-' + id;
+			var brush = d3.brushY()
+				.extent([[-8,0],[8,self.internalHeight]])
+				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
+				.on('brush',self.axisBrush)
+
+			if (self.brushes[dim]) {
+				self.brushes[dim].push({id, brush, node})
+			} else {
+				self.brushes[dim] = [{id, brush, node}]
+			}
+			return brush(g)
 		};
 
 		/***************************************
