@@ -180,26 +180,28 @@
 
 		 /** @type {Object (Arrays)} Keeps track of the extents of the brush for each dimension*/
 		this.brushExtents = {}
+		for (var d of self.dimensions){
+			this.brushExtents[d] = [];
+		}
 
 		/** @type {boolean} If true, don't update selection when brushes change */
 		this.dontUpdateSelectionOnBrush = false;
 
 		//Brush event handler
-		this.axisBrush = function(d) {
-			//If this is called due to an event (as opposed to manually called)
+		this.axisBrush = function(d, i) {
+			//If this is called due to an event (as opposed to programatticaly called)
 			//update corresponding brush extent
 			if (d3.event != null) {
-				self.brushExtents[d] = d3.event.selection;
-				//Ignore brush if its start and end coordinates are the same
-				if (self.brushExtents[d] != null && self.brushExtents[d][0] === self.brushExtents[d][1])
-					delete self.brushExtents[d];
+				var selection = d3.event.selection;
+				if (selection != null && selection[0] === selection[1])
+					selection = null
+				self.brushExtents[d][i] = selection;
 			}
 			if (!self.dontUpdateSelectionOnBrush)
 				self.updateSelection();
 		}
 
 		this.brushes = {}
-		this.brushnodes = {}
 		/** @type {d3.brushY} The brushes for each axis */
 		this.newBrush = function(g){
 			var dim = g.node().getAttribute('dimension');
@@ -215,7 +217,7 @@
 			}
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-				.on('brush', self.axisBrush) // todo: update axisBrush to look inside of brushgroups
+				//.on('brush', self.axisBrush) // todo: update axisBrush to look inside of brushgroups
 				.on('brush end', function() {
 				  // Figure out if our latest brush has a selection
 				  const lastBrushID = self.brushes[axis][self.brushes[axis].length - 1].id;
@@ -225,7 +227,7 @@
 					  '-' +
 					  lastBrushID
 				  );
-				  const selection = d3.brushSelection(lastBrush);
+				  const selection = d3.event.selection;
 
 				  if (
 					selection !== undefined &&
@@ -234,7 +236,7 @@
 				  ) {
 					self.newBrush(g);
 					self.drawBrushes(g);
-					self.axisBrush();
+					self.axisBrush(dim, id);
 				  // } else { / todo: adding a reset method may be nice
 					// if (
 					//   d3.event.sourceEvent &&
@@ -539,18 +541,19 @@
 		var self = this;
 		var newSelection = [];
 		this.db.data.forEach(function(d,i) {
-			var selected = true;
+			var selected = false;
 			for (var p in self.dimensions) {
-				var extent = self.brushExtents[self.dimensions[p]];
-				if (extent) {
-					var y = self.getYPosition(self.dimensions[p],d);
-					selected = selected && extent[0] <= y && y <= extent[1];
-					if (!selected)
-						break;
+				var dim = self.dimensions[p]
+				for (var extent of self.brushExtents[dim]) {
+						if (extent) {
+							var y = self.getYPosition(self.dimensions[p],d);
+							selected = selected && extent[0] <= y && y <= extent[1];
+						if (selected)
+							newSelection.push(i);
+							break;
+					}
 				}
 			}
-			if (selected)
-				newSelection.push(i);
 		});
 		if (!arraysEqual(this.selection,newSelection) || force) {
 			this.selection = newSelection;
