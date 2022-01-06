@@ -611,7 +611,7 @@
 				});
 			});
 		//call brush event handler
-		this.axisBrush();
+		this.axisBrush(); // todo: see how this worked
 	}
 
 	/**
@@ -637,7 +637,7 @@
 			}
 		});
 		//call brush event handler
-		this.axisBrush();
+		this.axisBrush(); // todo: see how this worked
 	}
 
 	/**
@@ -785,6 +785,7 @@
 	 * Get the y-coordinate of the line for data point p on dimension d
 	 * @param {Object} dimObject - dimension / startDate / endDate selected}
 	 */
+	//todo: ask if this is ever used anymore
 	CINEMA_COMPONENTS.Pcoord.prototype.addSelectionByDimensionValues = function(dimObject) {
 		var self = this;
 
