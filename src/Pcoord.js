@@ -216,9 +216,9 @@
 				self.brushes[dim] = [{id, brush, node}]
 			}
 			brush.extent([[-8,0],[8,self.internalHeight]])
-				.on('start', function(){d3.event.sourceEvent.stopPropagation();})
-				//.on('brush', self.axisBrush) // todo: update axisBrush to look inside of brushgroups
-				.on('brush end', function() {
+				.on('start', function() {d3.event.sourceEvent.stopPropagation();})
+				.on('brush', function() {self.axisBrush(dim, id)})
+				.on('end', function() {
 				  // Figure out if our latest brush has a selection
 				  const lastBrushID = self.brushes[axis][self.brushes[axis].length - 1].id;
 				  const lastBrush = document.getElementById(
@@ -227,8 +227,7 @@
 					  '-' +
 					  lastBrushID
 				  );
-				  const selection = d3.event.selection;
-
+				  const selection = d3.brushSelection(lastBrush);
 				  if (
 					selection !== undefined &&
 					selection !== null &&
