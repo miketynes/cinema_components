@@ -490,18 +490,39 @@
 
 		//Redraw brushes
 		this.dontUpdateSelectionOnBrush = true; //avoid updating selection when resizing brushes
-		this.brush.extent([[-8,0],[8,this.internalHeight]]);
-		this.axes.selectAll('g.brush').each(function(d) {
-			d3.select(this).call(self.brush);
-			d3.select(this).call(self.brush.move, function() {
-				if (self.brushExtents[d] == null)
-					return null;
-
-				return self.brushExtents[d].map(function(i) {
-					return i/oldHeight * self.internalHeight;
-				});
-			});
-		});
+		// todo: cam we not just iterate over all of the brushes in self.brushes
+		// and call move?
+		var dimIdx = 0;
+		for (var axis in self.brushes) {
+			for (var brushRecord of self.brushes[axis]) {
+				var brush = brushRecord['brush'];
+				brush.extent([[-8,0],[8,this.internalHeight]]);
+				var brushNodeID = brushRecord['node']
+				var extent = self.brushExtents[axis][brushRecord['id']];
+				if (extent != null) {
+					var g = d3.select(document, 'g[id='+brushNodeID+']');
+					//brush(g);
+					var newExtent = extent.map(function() {
+								return dimIdx / oldHeight * self.internalHeight
+							});
+					//g.call(d3.brushY())
+					g.call(brush.move, newExtent);
+				}
+				dimIdx++;
+			}
+		}
+		// this.brush.extent([[-8,0],[8,this.internalHeight]]);
+		// this.axes.selectAll('g.brush').each(function(d) {
+		// 	d3.select(this).call(self.brush);
+		// 	d3.select(this).call(self.brush.move, function() {
+		// 		if (self.brushExtents[d] == null)
+		// 			return null;
+		//
+		// 		return self.brushExtents[d].map(function(i) {
+		// 			return i/oldHeight * self.internalHeight;
+		// 		});
+		// 	});
+		// });
 		this.dontUpdateSelectionOnBrush = false;
 		d3.selectAll('mousovertext').each(function() {this.parentElement.appendChild(this);})
 	}
