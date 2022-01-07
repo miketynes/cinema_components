@@ -205,7 +205,6 @@
 		/** @type {d3.brushY} The brushes for each axis */
 		this.newBrush = function(g){
 			var dim = g.node().getAttribute('dimension');
-			var axis = dim;
 			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
 			var node = 'brush-' + self.dimensions.indexOf(dim) + '-' + id;
 			var brush = d3.brushY();
@@ -220,10 +219,10 @@
 				.on('brush', function() {self.axisBrush(dim, id)})
 				.on('end', function() {
 				  // Figure out if our latest brush has a selection
-				  const lastBrushID = self.brushes[axis][self.brushes[axis].length - 1].id;
+				  const lastBrushID = self.brushes[dim][self.brushes[dim].length - 1].id;
 				  const lastBrush = document.getElementById(
 					'brush-' +
-					  self.dimensions.indexOf(axis) +
+					  self.dimensions.indexOf(dim) +
 					  '-' +
 					  lastBrushID
 				  );
@@ -242,7 +241,7 @@
 					//   d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
 					//   d3.event.selection === null
 					// ) {
-					//   pc.brushReset(axis);
+					//   pc.brushReset(dim);
 					// }
 				  // }
 
@@ -263,16 +262,15 @@
 			// draw the brushes for a given brushGroup corresponding to a dimension
 			// wip refactor from dog repo
 			var dim = brushGroup.node().getAttribute('dimension');
-			var axis = dim;
 			var brushes = self.brushes[dim];
 		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
 		    brushSelection
 		    	.enter() // todo1 this doesnt work on init. do we need to add an empty .brush g first?
 			    .insert('g', '.brush')
 				.attr('class', 'brush')
-				.attr('dimension', axis)
+				.attr('dimension', dim)
 				.attr('id',
-					  b => 'brush-' + self.dimensions.indexOf(axis) + '-' + b.id
+					  b => 'brush-' + self.dimensions.indexOf(dim) + '-' + b.id
 				)
 				.each(function(brushObject) {
 			 		 brushObject.brush(d3.select(this));
