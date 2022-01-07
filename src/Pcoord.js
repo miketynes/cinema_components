@@ -265,7 +265,7 @@
 			var brushes = self.brushes[dim];
 		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
 		    brushSelection
-		    	.enter() // todo1 this doesnt work on init. do we need to add an empty .brush g first?
+		    	.enter()
 			    .insert('g', '.brush')
 				.attr('class', 'brush')
 				.attr('dimension', dim)
@@ -492,6 +492,12 @@
 		this.dontUpdateSelectionOnBrush = true; //avoid updating selection when resizing brushes
 		// todo: cam we not just iterate over all of the brushes in self.brushes
 		// and call move?
+		/*
+		Well, this feels like it almost orks, but you cant call brush on the g for some reason...
+		And, for some other reason, this breaks brush.move...
+		I wonder if we should just delete the brushes from the svg and recreate them using newbrush?
+		Perhaps then we can call brush and brush.move?
+		 */
 		var dimIdx = 0;
 		for (var axis in self.brushes) {
 			for (var brushRecord of self.brushes[axis]) {
@@ -506,7 +512,7 @@
 								return dimIdx / oldHeight * self.internalHeight
 							});
 					//g.call(d3.brushY())
-					g.call(brush.move, newExtent);
+					//g.call(brush.move, newExtent);
 				}
 				dimIdx++;
 			}
