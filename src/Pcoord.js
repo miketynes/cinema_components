@@ -187,6 +187,13 @@
 		/** @type {boolean} If true, don't update selection when brushes change */
 		this.dontUpdateSelectionOnBrush = false;
 
+		/*
+		Delete the brush svg groups within an axis corresponding to dim
+		 */
+		this.clearAxisBrushes = function(dim) {
+			d3.selectAll('g.brush[dimension='+dim+']').remove()
+		}
+
 		//Brush event handler
 		this.axisBrush = function(d, i) {
 			//If this is called due to an event (as opposed to programatticaly called)
@@ -215,7 +222,11 @@
 				self.brushes[dim] = [{id, brush, node}]
 			}
 			brush.extent([[-8,0],[8,self.internalHeight]])
-				.on('start', function() {d3.event.sourceEvent.stopPropagation();})
+				.on('start', function() {
+					try {
+						d3.event.sourceEvent.stopPropagation();
+					} catch { }
+				})
 				.on('brush', function() {self.axisBrush(dim, id)})
 				.on('end', function() {
 				  // Figure out if our latest brush has a selection
@@ -251,9 +262,11 @@
 			return brush
 		};
 
-		this.brushFor = function(brushGroup) {
-			// initialize a brush for the brush group corresponding to a dimension
 
+		/*
+		Initialize the brushes for a given dimension
+		 */
+		this.brushFor = function(brushGroup) {
 		  self.newBrush(brushGroup);
 		  self.drawBrushes(brushGroup);
 		};
@@ -498,25 +511,58 @@
 		I wonder if we should just delete the brushes from the svg and recreate them using newbrush?
 		Perhaps then we can call brush and brush.move?
 		 */
-		var dimIdx = 0;
-		for (var axis in self.brushes) {
-			for (var brushRecord of self.brushes[axis]) {
-				var brush = brushRecord['brush'];
-				brush.extent([[-8,0],[8,this.internalHeight]]);
-				var brushNodeID = brushRecord['node']
-				var extent = self.brushExtents[axis][brushRecord['id']];
-				if (extent != null) {
-					var g = d3.select(document, 'g[id='+brushNodeID+']');
-					//brush(g);
-					var newExtent = extent.map(function() {
-								return dimIdx / oldHeight * self.internalHeight
-							});
-					//g.call(d3.brushY())
-					//g.call(brush.move, newExtent);
+
+		/*
+		Now lets try it based on this: https://github.com/BigFatDog/parcoords-es/blob/master/src/brush/1d-multi/brushReset.js
+		 */
+		self.dimensions.forEach((d, pos) => {
+			const axisBrush = self.brushes[d];
+			if (axisBrush) {
+			  axisBrush.forEach((e, i) => {
+				const brushElem = document.getElementById('brush-' + pos + '-' + i);
+				if (brushElem && d3.brushSelection(brushElem) !== null) {
+
+					e.brush.extent([[-8,0],[8,this.internalHeight]])
+					// todo this select actually appears to return an empty Array
+					console.log('e, i:')
+					console.log(pos, e, i)
+					console.log('axiscontainer.select(#brush-pos-i)')
+					console.log(self.axisContainer.select('#brush-' + pos + '-' + i))
+					// "delete" the old brush
+					self.axisContainer
+						.select('#brush-' + pos + '-' + i)
+						.call(e.brush) //
+						.call(e.brush.move, [-1, 1])
+					// this almost works! just needs to re-draw the top bbrush as well, and
+					// actually pass the correct locations!
 				}
-				dimIdx++;
+			  });
+			  //self.drawBrushes(d3.select('.axisGroup[dimension='+d+']'))
 			}
-		}
+		  });
+
+		// var dimIdx = 0;
+		// for (var axis in self.brushes) {
+		// 	self.clearAxisBrushes(axis)
+		//
+		// 	for (var brushRecord of self.brushes[axis]) {
+		// 		var brush = self.newBrush(axis);
+		// 		self.drawBrushes(axis)
+		// 		//brush.extent([[-8,0],[8,this.internalHeight]]);
+		// 		var brushNodeID = brushRecord['node']
+		// 		var extent = self.brushExtents[axis][brushRecord['id']];
+		// 		if (extent != null) {
+		// 			var g = d3.select(document, 'g[id='+brushNodeID+']');
+		// 			//brush(g);
+		// 			var newExtent = extent.map(function() {
+		// 						return dimIdx / oldHeight * self.internalHeight
+		// 					});
+		// 			//g.call(d3.brushY())
+		// 			g.call(brush.move, newExtent);
+		// 		}
+		// 		dimIdx++;
+		// 	}
+		// }
 		// this.brush.extent([[-8,0],[8,this.internalHeight]]);
 		// this.axes.selectAll('g.brush').each(function(d) {
 		// 	d3.select(this).call(self.brush);
