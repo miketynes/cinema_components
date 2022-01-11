@@ -391,7 +391,7 @@
 
 		this.brushReset = function() {
 			this.brushMemberInit();
-			this.brushDomInit();
+			this.brushDOMInit();
 		}
 	};
 	//establish prototype chain
@@ -628,6 +628,7 @@
 		var ranges = {};
 		var self = this;
 		console.log(selection);
+		this.brushReset()
 		this.dimensions.forEach(function(d) {
 			ranges[d] = d3.extent(selection, function(i) {
 				return self.getYPosition(d, self.db.data[i]);
