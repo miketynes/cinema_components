@@ -811,7 +811,7 @@
 			//If the value is NaN on a linear scale, return internalHeight as the position
 			//(to place the line on the NaN tick)
 			return this.internalHeight;
-		return (p[d]);
+		return this.y[d](p[d]);
 	}
 
 	/**
