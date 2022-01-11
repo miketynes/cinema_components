@@ -509,19 +509,15 @@
 			self.brushes[d].forEach((e, i) => {
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
 				e.brush.extent([[-8,0],[8,this.internalHeight]]);
+				var brushSelection = self.axisContainer
+					.select('#brush-' + pos + '-' + i)
+					.call(e.brush)
 				if (d3.brushSelection(brushElem) !== null){
 					var old_extents = self.brushExtents[d][i];
 					var new_extents = old_extents.map(function(_) {
 						return _/oldHeight * self.internalHeight;
 					});
-					self.axisContainer
-						.select('#brush-' + pos + '-' + i)
-						.call(e.brush)
-						.call(e.brush.move, new_extents)
-				} else {
-					self.axisContainer
-						.select('#brush-' + pos + '-' + i)
-						.call(e.brush)
+						brushSelection.call(e.brush.move, new_extents)
 				}
 			  });
 		  });
