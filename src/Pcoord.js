@@ -178,21 +178,19 @@
 		 * BRUSHES
 		 ***************************************/
 
-		 /** @type {Object (Arrays)} Keeps track of the extents of the brush for each dimension*/
-		this.brushExtents = {}
-		for (var d of self.dimensions){
-			this.brushExtents[d] = [];
-		}
-
-		/** @type {boolean} If true, don't update selection when brushes change */
-		this.dontUpdateSelectionOnBrush = false;
-
-		/*
-		Delete the brush svg groups within an axis corresponding to dim
-		 */
-		this.clearAxisBrushes = function(dim) {
-			d3.selectAll('g.brush[dimension='+dim+']').remove()
-		}
+		/**
+		Initialize member variables for tracking brushes
+		but not DOM elements or d3.brush objects
+		*/
+		this.brushMemberInit = function() {
+			this.dontUpdateSelectionOnBrush = false;
+		 	this.brushes = {}
+		 	this.brushExtents = {}
+		 	for (var d of self.dimensions){
+		 		this.brushExtents[d] = [];
+		 	}
+		 };
+		 this.brushMemberInit();
 
 		//Brush event handler
 		this.axisBrush = function(d, i) {
@@ -208,7 +206,6 @@
 				self.updateSelection();
 		}
 
-		this.brushes = {}
 		/** @type {d3.brushY} The brushes for each axis */
 		this.newBrush = function(g){
 			var dim = g.node().getAttribute('dimension');
@@ -262,15 +259,6 @@
 			return brush
 		};
 
-
-		/*
-		Initialize the brushes for a given dimension
-		 */
-		this.brushFor = function(brushGroup) {
-		  self.newBrush(brushGroup);
-		  self.drawBrushes(brushGroup);
-		};
-
 		this.drawBrushes = (brushGroup) => {
 			// draw the brushes for a given brushGroup corresponding to a dimension
 			// wip refactor from dog repo
@@ -303,7 +291,6 @@
 		  	});
 		  	brushSelection.exit().remove();
 		};
-
 		/***************************************
 		 * DOM Content
 		 ***************************************/
@@ -386,14 +373,26 @@
 			.attr('y',function(d){return d.y;})
 			.attr('width',function(d){return d.width - 6;})
 			.attr('height',function(d){return d.height;});
-		//Add brush group to each axis group
-		this.axes
-			.data(this.dimensions)
-			.append('g')
-			.classed('brushgroup',true)
-			.attr('dimension', function(d) {return d})
-			.each(function() {d3.select(this).call(self.brushFor);} );
 
+		this.brushDOMInit = function() {
+			//Add brush group to each axis group
+			this.axes
+				.data(this.dimensions)
+				.append('g')
+				.classed('brushgroup',true)
+				.attr('dimension', function(d) {return d})
+				.each(function() {
+					d3.select(this)
+						.call(self.newBrush)
+						.call(self.drawBrushes);
+				});
+		}
+		this.brushDOMInit()
+
+		this.brushReset = function() {
+			this.brushMemberInit();
+			this.brushDomInit();
+		}
 	};
 	//establish prototype chain
 	CINEMA_COMPONENTS.Pcoord.prototype = Object.create(CINEMA_COMPONENTS.Component.prototype);
