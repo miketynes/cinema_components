@@ -616,12 +616,14 @@
 		var self = this;
 		this.brushReset()
 		this.dimensions.forEach(function(d) {
+			// todo: get this to work
 			if (!self.db.isStringDimension(d)) {
 				ranges[d] = d3.extent(selection, function(i) {
 					return self.getYPosition(d, self.db.data[i]);
 				});
 				self.axes
 					.select('brush[dim='+d+']')
+					// todo the problem is in this call to brush.move, lets simplify this
 					.call(self.brushes[d].brush.move, [ranges[d]-5, ranges[d]+5])
 			} else {
 				ranges[d] = []
@@ -644,7 +646,7 @@
 		// 		});
 		// 	});
 		//call brush event handler
-		this.axisBrush(); // todo: see how this worked
+		//this.axisBrush(); // todo: see how this worked
 	}
 
 	/**
