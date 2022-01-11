@@ -502,8 +502,6 @@
 
 		// Redraw brushes
 		this.dontUpdateSelectionOnBrush = true; //avoid updating selection when resizing brushes
-
-		// update all brushes that have been previously drawn
 		self.dimensions.forEach((d, pos) => {
 			self.brushes[d].forEach((e, i) => {
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
@@ -521,17 +519,6 @@
 			  });
 		  });
 		this.dontUpdateSelectionOnBrush = false;
-
-		//update the topmost invisible brush s.t. it covers the new axis extent
-		self.dimensions.forEach((d, pos) => {
-			var dim_brushes = self.brushes[d];
-			var n_brushes = 0;
-			if (dim_brushes) {
-				n_brushes = dim_brushes.length
-			}
-			var top_brush_ix = n_brushes + 1;
-
-		});
 
 		// move mouseovertext
 		d3.selectAll('mousovertext').each(function() {this.parentElement.appendChild(this);})
@@ -627,19 +614,35 @@
 	CINEMA_COMPONENTS.Pcoord.prototype.setSelection = function(selection) {
 		var ranges = {};
 		var self = this;
-		console.log(selection);
 		this.brushReset()
 		this.dimensions.forEach(function(d) {
-			ranges[d] = d3.extent(selection, function(i) {
-				return self.getYPosition(d, self.db.data[i]);
-			});
-		});
-		this.axes.selectAll('g.brush')
-			.each(function(d) {
-				d3.select(this).call(self.brush.move, function() {
-					return [ranges[d][0]-5,ranges[d][1]+5];
+			if (!self.db.isStringDimension(d)) {
+				ranges[d] = d3.extent(selection, function(i) {
+					return self.getYPosition(d, self.db.data[i]);
 				});
-			});
+				self.axes
+					.select('brush[dim='+d+']')
+					.call(self.brushes[d].brush.move, [ranges[d]-5, ranges[d]+5])
+			} else {
+				ranges[d] = []
+				// get the unique elements of the string varaible in the selection
+				var unique = new Set();
+				selection.forEach((e, i) => {
+					unique.add(self.db.data[i][d])
+				});
+				unique = [unique];
+				unique.forEach((e) => {
+					ranges[d].append(self.y[d](e))
+				});
+			}
+
+		});
+		// this.axes.selectAll('g.brush')
+		// 	.each(function(d) {
+		// 		d3.select(this).call(this.brush.move, function() {
+		// 			return [ranges[d][0]-5,ranges[d][1]+5];
+		// 		});
+		// 	});
 		//call brush event handler
 		this.axisBrush(); // todo: see how this worked
 	}
@@ -808,7 +811,7 @@
 			//If the value is NaN on a linear scale, return internalHeight as the position
 			//(to place the line on the NaN tick)
 			return this.internalHeight;
-		return this.y[d](p[d]);
+		return (p[d]);
 	}
 
 	/**
