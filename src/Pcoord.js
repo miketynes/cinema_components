@@ -501,81 +501,44 @@
 			}
 		});
 
-		//Redraw brushes
+		// Redraw brushes
 		this.dontUpdateSelectionOnBrush = true; //avoid updating selection when resizing brushes
-		// todo: cam we not just iterate over all of the brushes in self.brushes
-		// and call move?
-		/*
-		Well, this feels like it almost orks, but you cant call brush on the g for some reason...
-		And, for some other reason, this breaks brush.move...
-		I wonder if we should just delete the brushes from the svg and recreate them using newbrush?
-		Perhaps then we can call brush and brush.move?
-		 */
 
-		/*
-		Now lets try it based on this: https://github.com/BigFatDog/parcoords-es/blob/master/src/brush/1d-multi/brushReset.js
-		 */
+		// update all brushes that have been previously drawn
 		self.dimensions.forEach((d, pos) => {
-			const axisBrush = self.brushes[d];
-			if (axisBrush) {
-			  axisBrush.forEach((e, i) => {
+			self.brushes[d].forEach((e, i) => {
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
-				if (brushElem && d3.brushSelection(brushElem) !== null) {
-
-					e.brush.extent([[-8,0],[8,this.internalHeight]])
-					// todo this select actually appears to return an empty Array
-					console.log('e, i:')
-					console.log(pos, e, i)
-					console.log('axiscontainer.select(#brush-pos-i)')
-					console.log(self.axisContainer.select('#brush-' + pos + '-' + i))
-					// "delete" the old brush
+				e.brush.extent([[-8,0],[8,this.internalHeight]]);
+				if (d3.brushSelection(brushElem) !== null){
+					var old_extents = self.brushExtents[d][i];
+					var new_extents = old_extents.map(function(_) {
+						return _/oldHeight * self.internalHeight;
+					});
 					self.axisContainer
 						.select('#brush-' + pos + '-' + i)
-						.call(e.brush) //
-						.call(e.brush.move, [-1, 1])
-					// this almost works! just needs to re-draw the top bbrush as well, and
-					// actually pass the correct locations!
+						.call(e.brush)
+						.call(e.brush.move, new_extents)
+				} else {
+					self.axisContainer
+						.select('#brush-' + pos + '-' + i)
+						.call(e.brush)
 				}
 			  });
-			  //self.drawBrushes(d3.select('.axisGroup[dimension='+d+']'))
-			}
 		  });
-
-		// var dimIdx = 0;
-		// for (var axis in self.brushes) {
-		// 	self.clearAxisBrushes(axis)
-		//
-		// 	for (var brushRecord of self.brushes[axis]) {
-		// 		var brush = self.newBrush(axis);
-		// 		self.drawBrushes(axis)
-		// 		//brush.extent([[-8,0],[8,this.internalHeight]]);
-		// 		var brushNodeID = brushRecord['node']
-		// 		var extent = self.brushExtents[axis][brushRecord['id']];
-		// 		if (extent != null) {
-		// 			var g = d3.select(document, 'g[id='+brushNodeID+']');
-		// 			//brush(g);
-		// 			var newExtent = extent.map(function() {
-		// 						return dimIdx / oldHeight * self.internalHeight
-		// 					});
-		// 			//g.call(d3.brushY())
-		// 			g.call(brush.move, newExtent);
-		// 		}
-		// 		dimIdx++;
-		// 	}
-		// }
-		// this.brush.extent([[-8,0],[8,this.internalHeight]]);
-		// this.axes.selectAll('g.brush').each(function(d) {
-		// 	d3.select(this).call(self.brush);
-		// 	d3.select(this).call(self.brush.move, function() {
-		// 		if (self.brushExtents[d] == null)
-		// 			return null;
-		//
-		// 		return self.brushExtents[d].map(function(i) {
-		// 			return i/oldHeight * self.internalHeight;
-		// 		});
-		// 	});
-		// });
 		this.dontUpdateSelectionOnBrush = false;
+
+		//update the topmost invisible brush s.t. it covers the new axis extent
+		self.dimensions.forEach((d, pos) => {
+			var dim_brushes = self.brushes[d];
+			var n_brushes = 0;
+			if (dim_brushes) {
+				n_brushes = dim_brushes.length
+			}
+			var top_brush_ix = n_brushes + 1;
+
+		});
+
+		// move mouseovertext
 		d3.selectAll('mousovertext').each(function() {this.parentElement.appendChild(this);})
 	}
 
