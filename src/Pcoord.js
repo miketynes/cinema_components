@@ -383,6 +383,10 @@
 		this.brushReset = function() {
 			this.dimensions.forEach((d, pos) => {
 			this.brushes[d].forEach((e, i) => {
+				// dont update the topmost brush, which we need to
+				// work as usual
+				if (i === this.brushes[d].length-1)
+					return
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
 				var brushSelection = this.axisContainer
 					.select('#brush-' + pos + '-' + i)
