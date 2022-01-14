@@ -391,6 +391,9 @@
 
 		this.brushReset = function() {
 			this.brushMemberInit();
+			this.axes
+				.selectAll('g.brushgroup')
+				.remove();
 			this.brushDOMInit();
 		}
 	};
@@ -615,26 +618,35 @@
 		var ranges = {};
 		var self = this;
 		this.brushReset()
-		this.dimensions.forEach(function(d) {
+		this.dimensions.forEach(function(d, pos) {
 			// todo: get this to work
+			/*
+			The brushes are not being redrawn correctly in the svg
+			Its adding a 1-0 and a 1-1...
+			 */
 			if (!self.db.isStringDimension(d)) {
 				ranges[d] = d3.extent(selection, function(i) {
 					return self.getYPosition(d, self.db.data[i]);
 				});
+				var brush = self.brushes[d][0].brush
 				self.axes
-					.select('brush[dim='+d+']')
-					// todo the problem is in this call to brush.move, lets simplify this
-					.call(self.brushes[d].brush.move, [ranges[d]-5, ranges[d]+5])
+					/*
+					We are assuming there will only be one brush for numeric variables
+					when set selection is called
+					 */
+					.select('#brush-' + pos + '-0')
+					.call(brush)
+					.call(brush.move, [ranges[d]-5, ranges[d]+5])
 			} else {
 				ranges[d] = []
-				// get the unique elements of the string varaible in the selection
+				// get the unique elements of the string variable in the selection
 				var unique = new Set();
 				selection.forEach((e, i) => {
 					unique.add(self.db.data[i][d])
 				});
 				unique = [unique];
 				unique.forEach((e) => {
-					ranges[d].append(self.y[d](e))
+					ranges[d].push(self.y[d](e))
 				});
 			}
 
