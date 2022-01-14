@@ -218,6 +218,8 @@
 			} else {
 				self.brushes[dim] = [{id, brush, node}]
 			}
+			self.brushExtents[dim][id] = null;
+
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function() {
 					try {
@@ -240,21 +242,10 @@
 					selection !== null &&
 					selection[0] !== selection[1]
 				  ) {
-					self.newBrush(g);
-					self.drawBrushes(g);
-					self.axisBrush(dim, id);
-				  // } else { / todo: adding a reset method may be nice
-					// if (
-					//   d3.event.sourceEvent &&
-					//   d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
-					//   d3.event.selection === null
-					// ) {
-					//   pc.brushReset(dim);
-					// }
-				  // }
-
-				  //d3.events.call('brushend', pc, config.brushed);
-					}
+					  self.newBrush(g);
+					  self.drawBrushes(g);
+					  self.axisBrush(dim, id);
+				  };
 				});
 			return brush
 		};
@@ -390,11 +381,20 @@
 		this.brushDOMInit()
 
 		this.brushReset = function() {
-			this.brushMemberInit();
-			this.axes
-				.selectAll('g.brushgroup')
-				.remove();
-			this.brushDOMInit();
+			this.dimensions.forEach((d, pos) => {
+			this.brushes[d].forEach((e, i) => {
+				const brushElem = document.getElementById('brush-' + pos + '-' + i);
+				var brushSelection = this.axisContainer
+					.select('#brush-' + pos + '-' + i)
+				if (d3.brushSelection(brushElem) !== null){
+					brushSelection
+						.call(e.brush)
+						.call(e.brush.move, null)
+					this.brushExtents[d][i] = null
+					this.updateSelection();
+				}
+			  });
+		  });
 		}
 	};
 	//establish prototype chain
@@ -561,7 +561,7 @@
 		this.db.data.forEach(function(d,i) {
 			var selected = true;
 			for (var dim of self.dimensions) {
-				if (self.brushExtents[dim].length > 0) {
+				if (self.brushExtents[dim].length > 1) {
 					var in_any_brush_of_dim = false;
 					for (var extent of self.brushExtents[dim]) {
 						var y = self.getYPosition(dim, d);
@@ -628,15 +628,19 @@
 				ranges[d] = d3.extent(selection, function(i) {
 					return self.getYPosition(d, self.db.data[i]);
 				});
-				var brush = self.brushes[d][0].brush
+				var lastIx = self.brushes[d].length - 1;
+				var brush = self.brushes[d][lastIx].brush
+				var newPos = [ranges[d][0]-5, ranges[d][1]+5];
+				self.brushExtents[d][lastIx] = newPos;
 				self.axes
 					/*
 					We are assuming there will only be one brush for numeric variables
 					when set selection is called
+					and its the last one
 					 */
-					.select('#brush-' + pos + '-0')
+					.select('#brush-' + pos + '-' + lastIx)
 					.call(brush)
-					.call(brush.move, [ranges[d]-5, ranges[d]+5])
+					.call(brush.move, newPos)
 			} else {
 				ranges[d] = []
 				// get the unique elements of the string variable in the selection
