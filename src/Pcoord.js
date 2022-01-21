@@ -636,7 +636,7 @@
 				var brush = self.brushes[d][lastIx].brush
 				var newPos = [ranges[d][0]-5, ranges[d][1]+5];
 				self.brushExtents[d][lastIx] = newPos;
-				self.axes
+				self.axisContainer
 					/*
 					We are assuming there will only be one brush for numeric variables
 					when set selection is called
