@@ -662,7 +662,8 @@
 					1. Draw one large brush for the unchecked dimensions
 					2. somehow filter out only the strings that match the query
 					   (which may only be a strict subset of the strings in the selection)
-					3. doublecheck that y is being set correctly
+					3. doublecheck that y is being set correctly (it seems to be drawing in the wrong place)
+					4. update the ranges[d]
 					 */
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
