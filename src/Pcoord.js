@@ -658,9 +658,11 @@
 				});
 				ranges[d].forEach((e, i) => {
 					/*
-					todo: this is working, but need to
-					1. exclude non-checked dimensions (or draw one brush)
-					2. fix y selection
+					todo: this is kindof working, but need to
+					1. Draw one large brush for the unchecked dimensions
+					2. somehow filter out only the strings that match the query
+					   (which may only be a strict subset of the strings in the selection)
+					3. doublecheck that y is being set correctly
 					 */
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
