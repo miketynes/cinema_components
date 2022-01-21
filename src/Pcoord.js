@@ -623,7 +623,8 @@
 		var self = this;
 		this.brushReset()
 		this.dimensions.forEach(function(d, pos) {
-			// todo: get this to work
+			//todo: dry this method
+
 			/*
 			The brushes are not being redrawn correctly in the svg
 			Its adding a 1-0 and a 1-1...
@@ -652,10 +653,29 @@
 				selection.forEach((e, i) => {
 					unique.add(self.db.data[i][d])
 				});
-				unique = [unique];
 				unique.forEach((e) => {
 					ranges[d].push(self.y[d](e))
 				});
+				ranges[d].forEach((e, i) => {
+					/*
+					todo: this is working, but need to
+					1. exclude non-checked dimensions (or draw one brush)
+					2. fix y selection
+					 */
+					var lastIx = self.brushes[d].length - 1;
+					var brush = self.brushes[d][lastIx].brush
+					var newPos = [e-5, e+5];
+					self.brushExtents[d][lastIx] = newPos;
+					self.axisContainer
+						.select('#brush-' + pos + '-' + lastIx)
+						.call(brush)
+						.call(brush.move, newPos)
+					self
+						.axisContainer
+						.select('.brushgroup[dimension='+d+']')
+						.call(self.newBrush)
+						.call(self.drawBrushes)
+				})
 			}
 
 		});
