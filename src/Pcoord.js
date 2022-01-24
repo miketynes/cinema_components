@@ -623,12 +623,6 @@
 		var self = this;
 		this.brushReset()
 		this.dimensions.forEach(function(d, pos) {
-			//todo: dry this method
-
-			/*
-			The brushes are not being redrawn correctly in the svg
-			Its adding a 1-0 and a 1-1...
-			 */
 			if (!self.db.isStringDimension(d)) {
 				ranges[d] = d3.extent(selection, function(i) {
 					return self.getYPosition(d, self.db.data[i]);
@@ -654,14 +648,6 @@
 				});
 				unique.forEach((e) => {
 					var y = self.y[d](e)
-					/*
-					todo: this is kindof working, but need to
-					1. Draw one large brush for the unchecked dimensions
-					2. somehow filter out only the strings that match the query
-					   (which may only be a strict subset of the strings in the selection)
-					3. doublecheck that y is being set correctly (it seems to be drawing in the wrong place)
-					4. update the ranges[d]
-					 */
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
 					var newPos = [y-5, y+5];
@@ -678,14 +664,6 @@
 			}
 
 		});
-		// this.axes.selectAll('g.brush')
-		// 	.each(function(d) {
-		// 		d3.select(this).call(this.brush.move, function() {
-		// 			return [ranges[d][0]-5,ranges[d][1]+5];
-		// 		});
-		// 	});
-		//call brush event handler
-		//this.axisBrush(); // todo: see how this worked
 	}
 
 	/**
