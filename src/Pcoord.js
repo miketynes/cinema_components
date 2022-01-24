@@ -647,16 +647,13 @@
 					.call(brush)
 					.call(brush.move, newPos)
 			} else {
-				ranges[d] = []
 				// get the unique elements of the string variable in the selection
 				var unique = new Set();
-				selection.forEach((e, i) => {
+				selection.forEach((i) => {
 					unique.add(self.db.data[i][d])
 				});
 				unique.forEach((e) => {
-					ranges[d].push(self.y[d](e))
-				});
-				ranges[d].forEach((e, i) => {
+					var y = self.y[d](e)
 					/*
 					todo: this is kindof working, but need to
 					1. Draw one large brush for the unchecked dimensions
@@ -667,14 +664,13 @@
 					 */
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
-					var newPos = [e-5, e+5];
+					var newPos = [y-5, y+5];
 					self.brushExtents[d][lastIx] = newPos;
 					self.axisContainer
 						.select('#brush-' + pos + '-' + lastIx)
 						.call(brush)
 						.call(brush.move, newPos)
-					self
-						.axisContainer
+					self.axisContainer
 						.select('.brushgroup[dimension='+d+']')
 						.call(self.newBrush)
 						.call(self.drawBrushes)
