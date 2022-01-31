@@ -330,7 +330,7 @@
 	 * Get data rows (returned as an array of indices) that are similar to the given data.
 	 * Difference between two data points is measured as the Manhattan distance where each dimension
 	 * is normalized. i.e. The sum of the differencs on each dimension (each scaled from 0 to 1).
-	 * On string dimensions, the distance is 0 if the query string as a regex is satisfied by the data, Infinity otherwise
+	 * On string dimensions, the distance is 0 if the data is a regex match to the query string, Infinity otherwise
 	 * NaN values have 0 distance from each other, but 1 from anything else
 	 * undefined values 0 distance from each other, but 1 from defined values
 	 * @param {Object} query - An object representing the data to compare against 
