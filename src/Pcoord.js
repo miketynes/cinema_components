@@ -174,6 +174,10 @@
 			.on('drag',this.axisDrag)
 			.on('end',this.axisDragEnd);
 
+		/** keep track of dimensions in their original, unpermuted order
+		 * before axis dragging **/
+		this.originalDimensions = JSON.parse(JSON.stringify(this.dimensions))
+
 		/***************************************
 		 * BRUSHES
 		 ***************************************/
@@ -210,7 +214,7 @@
 		this.newBrush = function(g){
 			var dim = g.node().getAttribute('dimension');
 			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
-			var node = 'brush-' + self.dimensions.indexOf(dim) + '-' + id;
+			var node = 'brush-' + self.originalDimensions.indexOf(dim) + '-' + id;
 			var brush = d3.brushY();
 
 			if (self.brushes[dim]) {
@@ -232,7 +236,7 @@
 				  const lastBrushID = self.brushes[dim][self.brushes[dim].length - 1].id;
 				  const lastBrush = document.getElementById(
 					'brush-' +
-					  self.dimensions.indexOf(dim) +
+					  self.originalDimensions.indexOf(dim) +
 					  '-' +
 					  lastBrushID
 				  );
@@ -262,7 +266,7 @@
 				.attr('class', 'brush')
 				.attr('dimension', dim)
 				.attr('id',
-					  b => 'brush-' + self.dimensions.indexOf(dim) + '-' + b.id
+					  b => 'brush-' + self.originalDimensions.indexOf(dim) + '-' + b.id
 				)
 				.each(function(brushObject) {
 			 		 brushObject.brush(d3.select(this));
@@ -282,6 +286,7 @@
 		  	});
 		  	brushSelection.exit().remove();
 		};
+
 		/***************************************
 		 * DOM Content
 		 ***************************************/
@@ -368,7 +373,7 @@
 		this.brushDOMInit = function() {
 			//Add brush group to each axis group
 			this.axes
-				.data(this.dimensions)
+				.data(this.originalDimensions)
 				.append('g')
 				.classed('brushgroup',true)
 				.attr('dimension', function(d) {return d})
@@ -381,7 +386,7 @@
 		this.brushDOMInit()
 
 		this.brushReset = function() {
-			this.dimensions.forEach((d, pos) => {
+			this.originalDimensions.forEach((d, pos) => {
 			this.brushes[d].forEach((e, i) => {
 				// dont update the topmost brush, which we need to
 				// work as usual
@@ -509,7 +514,7 @@
 
 		// Redraw brushes
 		this.dontUpdateSelectionOnBrush = true; //avoid updating selection when resizing brushes
-		self.dimensions.forEach((d, pos) => {
+		self.originalDimensions.forEach((d, pos) => {
 			self.brushes[d].forEach((e, i) => {
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
 				e.brush.extent([[-8,0],[8,this.internalHeight]]);
@@ -622,7 +627,7 @@
 		var ranges = {};
 		var self = this;
 		this.brushReset()
-		this.dimensions.forEach(function(d, pos) {
+		this.originalDimensions.forEach(function(d, pos) {
 			if (!self.db.isStringDimension(d)) {
 				ranges[d] = d3.extent(selection, function(i) {
 					return self.getYPosition(d, self.db.data[i]);
