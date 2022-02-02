@@ -239,9 +239,11 @@
 	CINEMA_COMPONENTS.Query.prototype.updateBounds = function() {
 		var self = this;
 		var threshold = Number(this.thresholdNode.value);
-		//average difference along each dimension
-		// todo: update denominator to only reflect included numeric features
-		var avg = (threshold/d3.keys(this.custom.data).length)*100;
+		//average difference along each numeric dimension
+		var n_numeric_feats = d3.keys(this.custom.data)
+			.filter((e) => !self.db.isStringDimension(e))
+			.length
+		var avg = (threshold/n_numeric_feats)*100;
 		this.upper.data = {};
 		this.lower.data = {};
 		this.numeric_dimensions.forEach(function(d) {
