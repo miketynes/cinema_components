@@ -666,9 +666,10 @@
 				});
 				unique.forEach((e) => {
 					var y = self.y[d](e)
+					var pad = self.y[d].step()/3
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
-					var newPos = [y-5, y+5];
+					var newPos = [y-pad, y+pad];
 					self.brushExtents[d][lastIx] = newPos;
 					self.axisContainer
 						.select('#brush-' + pos + '-' + lastIx)
