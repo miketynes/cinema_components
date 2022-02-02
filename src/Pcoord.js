@@ -249,6 +249,12 @@
 					  self.newBrush(g);
 					  self.drawBrushes(g);
 					  self.axisBrush(dim, id);
+				  } else if (
+				  	d3.event.sourceEvent &&
+					  d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
+					  d3.event.selection === null
+				  ) {
+					  self.brushReset();
 				  };
 				});
 			return brush
@@ -256,7 +262,6 @@
 
 		this.drawBrushes = (brushGroup) => {
 			// draw the brushes for a given brushGroup corresponding to a dimension
-			// wip refactor from dog repo
 			var dim = brushGroup.node().getAttribute('dimension');
 			var brushes = self.brushes[dim];
 		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
@@ -388,8 +393,7 @@
 		this.brushReset = function() {
 			this.originalDimensions.forEach((d, pos) => {
 			this.brushes[d].forEach((e, i) => {
-				// dont update the topmost brush, which we need to
-				// work as usual
+				// dont update the topmost brush
 				if (i === this.brushes[d].length-1)
 					return
 				const brushElem = document.getElementById('brush-' + pos + '-' + i);
@@ -400,10 +404,10 @@
 						.call(e.brush)
 						.call(e.brush.move, null)
 					this.brushExtents[d][i] = null
-					this.updateSelection();
 				}
 			  });
 		  });
+		this.updateSelection();
 		}
 	};
 	//establish prototype chain
@@ -570,7 +574,7 @@
 		this.db.data.forEach(function(d,i) {
 			var selected = true;
 			for (var dim of self.dimensions) {
-				if (self.brushExtents[dim].length > 1) {
+				if (!self.brushExtents[dim].every(value => value === null)) {
 					var in_any_brush_of_dim = false;
 					for (var extent of self.brushExtents[dim]) {
 						var y = self.getYPosition(dim, d);
