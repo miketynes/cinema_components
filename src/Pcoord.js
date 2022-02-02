@@ -254,8 +254,8 @@
 					  d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
 					  d3.event.selection === null
 				  ) {
-					  self.brushReset();
-				  };
+					  self.brushReset(dim);
+				  }
 				});
 			return brush
 		};
@@ -390,23 +390,32 @@
 		}
 		this.brushDOMInit()
 
-		this.brushReset = function() {
-			this.originalDimensions.forEach((d, pos) => {
-			this.brushes[d].forEach((e, i) => {
-				// dont update the topmost brush
-				if (i === this.brushes[d].length-1)
-					return
-				const brushElem = document.getElementById('brush-' + pos + '-' + i);
-				var brushSelection = this.axisContainer
-					.select('#brush-' + pos + '-' + i)
-				if (d3.brushSelection(brushElem) !== null){
-					brushSelection
-						.call(e.brush)
-						.call(e.brush.move, null)
-					this.brushExtents[d][i] = null
+		this.brushReset = function(dim) {
+			var dims;
+			if (dim === undefined) {
+				dims = this.originalDimensions
+			} else {
+				dims = [dim]
+			}
+			dims.forEach((d, pos) => {
+				if (dim !== undefined) {
+					pos = this.originalDimensions.indexOf(dim)
 				}
-			  });
-		  });
+				this.brushes[d].forEach((e, i) => {
+					// dont update the topmost brush
+					if (i === this.brushes[d].length-1)
+						return
+					const brushElem = document.getElementById('brush-' + pos + '-' + i);
+					var brushSelection = this.axisContainer
+						.select('#brush-' + pos + '-' + i)
+					if (d3.brushSelection(brushElem) !== null){
+						brushSelection
+							.call(e.brush)
+							.call(e.brush.move, null)
+						this.brushExtents[d][i] = null
+					}
+				  });
+		  	});
 		this.updateSelection();
 		}
 	};
