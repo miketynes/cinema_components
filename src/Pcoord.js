@@ -571,12 +571,12 @@
 	CINEMA_COMPONENTS.Pcoord.prototype.updateSelection = function(force) {
 		var self = this;
 		var newSelection = [];
-		this.db.data.forEach(function(d,i) {
+		this.db.data.forEach(function(d, i) {
 			var selected = true;
 			for (var dim of self.dimensions) {
-				if (!self.brushExtents[dim].every(value => value === null)) {
+				if (!self.brushExtents[dim].every(e => e === null)) {
 					var in_any_brush_of_dim = false;
-					for (var extent of self.brushExtents[dim]) {
+					for (var extent of self.brushExtents[dim].filter(e => e !== null)) {
 						var y = self.getYPosition(dim, d);
 						if (extent) {
 							if (extent[0] <= y && y <= extent[1]) {
