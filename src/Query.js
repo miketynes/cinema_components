@@ -162,15 +162,15 @@
 		this.rows.append('input')
 			.attr('type','checkbox')
 			.style('position','absolute')
-			.on('input',function(d, i) {
+			.on('input',function(d) {
 				if (this.checked) {
-					// todo theres probably a cleaner way
-					var slider = d3.select(this.parentNode).select('input[type="range"]');
-					var text = d3.select(this.parentNode).select('input[type="text"]');
-					if (slider.node() !== null) {
-						self.custom.data[d] = self.scales[d](slider.node().value);
-					} else if (text) {
-						self.custom.data[d] = text.node().value;
+					// only one of these should be present, depending on whether the variable is numeric or text
+					var slider = d3.select(this.parentNode).select('input[type="range"]').node();
+					var text = d3.select(this.parentNode).select('input[type="text"]').node();
+					if (slider!== null) {
+						self.custom.data[d] = self.scales[d](slider.value);
+					} else if (text !== null) {
+						self.custom.data[d] = text.value;
 					}
 				}
 				else {
