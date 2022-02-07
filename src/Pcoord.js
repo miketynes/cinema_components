@@ -359,7 +359,7 @@
 			.each(function(d) {
 				d3.select(this).call(d3.axisLeft().scale(self.y[d]));
 				if (!self.db.isStringDimension(d))
-					self.addNaNExtensionToAxis(this)
+					self.addNaNExtensionToAxis(this);
 			});
 		var labels = this.axes.append('g')
 			.classed('axisLabel',true)
