@@ -531,9 +531,6 @@
 			  });
 		  });
 		this.dontUpdateSelectionOnBrush = false;
-
-		// move mouseovertext
-		d3.selectAll('mousovertext').each(function() {this.parentElement.appendChild(this);})
 	}
 
 	/**
