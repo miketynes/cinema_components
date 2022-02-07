@@ -133,7 +133,10 @@
 	 */
 	CINEMA_COMPONENTS.PcoordSVG.prototype.redrawOverlayPaths = function() {
 		var self = this;
+		// make a copy of overlayData
 		var data = JSON.parse(JSON.stringify(this.overlayData));
+
+		// Ignore string axes when drawing overlay paths
 		data.forEach((e) => {
 			Object.keys(e["data"]).forEach((key) => {
 				if (self.db.isStringDimension(key))
