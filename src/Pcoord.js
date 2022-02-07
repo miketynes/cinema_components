@@ -255,9 +255,9 @@
 					topBrushSelection !== null &&
 					topBrushSelection[0] !== topBrushSelection[1]
 				  ) {
-				  	  // create a new brush for this brushgroup
-					  // (this looks like recursion but it will only go one level deep)
-					  // the new brush we create here will have an empty selection
+				  	  // Create a new brush for this brushgroup.
+					  // This recursion will only go one level deep
+					  // because the new brush will have an empty selection.
 					  self.newBrush(g);
 					  self.drawBrushes(g);
 					  // update the current brush's selection
