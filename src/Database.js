@@ -346,10 +346,8 @@
 			self.dimensions.forEach(function(d) {
 				if (query[d] !== undefined) {
 					//On string dimensions, the distance is considered 0 if the regex matches otherwise Infinity
-					if (self.isStringDimension(d)) {
-						var this_dist = (RegExp(query[d]).test(row[d]) ? 0 : Infinity);
-						dist += this_dist;
-					}
+					if (self.isStringDimension(d))
+						dist += (RegExp(query[d]).test(row[d]) ? 0 : Infinity);
 					//Compare number dimensions
 					else {
 						//NaN values have 0 distance from each other, but 1 from anything else
