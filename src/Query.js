@@ -235,6 +235,7 @@
 
 	/**
 	 * Update upper and lower data depending on custom data and current threshold value
+	 * Only consider numeric variables.
 	 */
 	CINEMA_COMPONENTS.Query.prototype.updateBounds = function() {
 		var self = this;
