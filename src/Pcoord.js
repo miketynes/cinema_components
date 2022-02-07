@@ -214,8 +214,10 @@
 		this.newBrush = function(g){
 			var brush = d3.brushY();
 			var dim = g.node().getAttribute('dimension');
+
 			// brushes for each dimension are identified by an integer index
 			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
+
 			// the DOM node is identified by 'brush-{dimension_index}-{brush_index}'
 			var node = 'brush-' + self.originalDimensions.indexOf(dim) + '-' + id;
 
@@ -233,31 +235,35 @@
 					try {
 						d3.event.sourceEvent.stopPropagation();
 					} catch {
-						// todo investigate
+						// todo investigate when this happens
 					}
 				})
 				.on('brush', function() {self.updateBrushSelection(dim, id)})
 				.on('end', function() {
-
-					// Figure out if our latest brush has a selection
-				  const lastBrushID = self.brushes[dim][self.brushes[dim].length - 1].id;
-				  const lastBrush = document.getElementById(
+					// Get the topmost brush in the dimension
+				  var topBrushID = self.brushes[dim][self.brushes[dim].length - 1].id;
+				  var topBrush = document.getElementById(
 					'brush-' +
 					  self.originalDimensions.indexOf(dim) +
 					  '-' +
-					  lastBrushID
+					  topBrushID
 				  );
-
-				  const selection = d3.brushSelection(lastBrush);
+				  var topBrushSelection = d3.brushSelection(topBrush);
 				  if (
-					selection !== undefined &&
-					selection !== null &&
-					selection[0] !== selection[1]
+				  	// if the selection is nonempty
+					topBrushSelection !== undefined &&
+					topBrushSelection !== null &&
+					topBrushSelection[0] !== topBrushSelection[1]
 				  ) {
+				  	  // create a new brush for this brushgroup
+					  // (this looks like recursion but it will only go one level deep)
+					  // the new brush we create here will have an empty selection
 					  self.newBrush(g);
 					  self.drawBrushes(g);
+					  // update the current brush's selection
 					  self.updateBrushSelection(dim, id);
 				  } else if (
+				  	// if the user clicks on the axis
 				  	d3.event.sourceEvent &&
 					  d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
 					  d3.event.selection === null
@@ -272,7 +278,7 @@
 			// draw the brushes for a given brushGroup corresponding to a dimension
 			var dim = brushGroup.node().getAttribute('dimension');
 			var brushes = self.brushes[dim];
-		    const brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
+		    var brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
 		    brushSelection
 		    	.enter()
 			    .insert('g', '.brush')
