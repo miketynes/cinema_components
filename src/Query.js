@@ -239,11 +239,7 @@
 	CINEMA_COMPONENTS.Query.prototype.updateBounds = function() {
 		var self = this;
 		var threshold = Number(this.thresholdNode.value);
-		//average difference along each numeric dimension
-		var n_numeric_feats = d3.keys(this.custom.data)
-			.filter((e) => !self.db.isStringDimension(e))
-			.length
-		var avg = (threshold/n_numeric_feats)*100;
+		var avg = (threshold/self.numeric_dimensions.length)*100;
 		this.upper.data = {};
 		this.lower.data = {};
 		this.numeric_dimensions.forEach(function(d) {
@@ -251,13 +247,6 @@
 				var s = self.scales[d];
 				self.lower.data[d] = s(Math.max(s.invert(self.custom.data[d])-avg,0));
 				self.upper.data[d] = s(Math.min(s.invert(self.custom.data[d])+avg,100));
-			}
-		});
-		this.string_dimensions.forEach(function(d) {
-			if (self.custom.data[d] !== undefined) {
-				var s = self.custom.data[d];
-				self.lower.data[d] = s;
-				self.upper.data[d] = s;
 			}
 		});
 	}
