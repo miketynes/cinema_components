@@ -358,11 +358,8 @@
 			.classed('axis',true)
 			.each(function(d) {
 				d3.select(this).call(d3.axisLeft().scale(self.y[d]));
-				if (!self.db.isStringDimension(d)) {
+				if (!self.db.isStringDimension(d))
 					self.addNaNExtensionToAxis(this)
-				} else {
-					self.shortenStringTicks(this);
-				}
 			});
 		var labels = this.axes.append('g')
 			.classed('axisLabel',true)
@@ -438,37 +435,6 @@
 	CINEMA_COMPONENTS.Pcoord.prototype.constructor = CINEMA_COMPONENTS.Pcoord;
 
 	/**
-	 * Shorten string ticks
-	 * @author Michael F. Tynes
-	 * @param {DOM} axis - an axis DOM object with string tick labels
-	 * @param {integer} axis - an axis DOM object with string tick labels
-	 * This could in principle be handled in CSS
-	 * But the CSS for SVG and Canvas may diverge
-	 */
-	CINEMA_COMPONENTS.Pcoord.prototype.shortenStringTicks = function(axis, max_length=10) {
-			for (var child of axis.childNodes){
-				var cls = child.getAttribute('class')
-				if (cls === 'tick') {
-					child.setAttribute('pointer-events', 'all')
-					var text = child.childNodes[1];
-					var raw = text.innerHTML;
-					if (raw.length > max_length) {
-						text.innerHTML = raw.slice(0, 10) + '...'
-						text.setAttribute('class', 'ticklabel')
-					}
-					// assuming the first two children are the tick and the text
-					if (child.childNodes.length < 3) {
-						var text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-						text2.setAttribute('class', 'mouseovertext');
-						//text2.setAttribute('display', 'none');
-						text2.innerHTML = raw;
-						child.appendChild(text2);
-					}
-				}
-			}
-		};
-
-	/**
 	 * Add an additional line segment and tick to the end of an axis to represent the area
 	 * for NaN values.
 	 * @param {DOM} node - The DOM node for the svg group containing the axis (g.axis)
@@ -533,9 +499,6 @@
 					.attr('d',"M0.5,"+String(self.internalHeight-self.NaNMargin+0.5)+"V"+String(self.internalHeight-0.5));
 				d3.select(this).select('.NaNExtensionTick')
 					.attr('transform',"translate(0,"+String(self.internalHeight-0.5)+")");
-			} else {
-				// `this` is an axis group, the first child is an axis
-				self.shortenStringTicks(this.childNodes[0])
 			}
 		});
 
