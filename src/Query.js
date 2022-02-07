@@ -238,7 +238,7 @@
 	 */
 	CINEMA_COMPONENTS.Query.prototype.updateBounds = function() {
 		var self = this;
-		var threshold = Number(this.thresholdNode.value);
+		var threshold = this.thresholdNode.value;
 		var avg = (threshold/self.numeric_dimensions.length)*100;
 		this.upper.data = {};
 		this.lower.data = {};
