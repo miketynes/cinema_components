@@ -687,7 +687,9 @@
 	 */
 	CINEMA_COMPONENTS.Pcoord.prototype.filterSelection = function(filter) {
 		var self = this;
-		this.dimensions.forEach(function(d) {
+		this.dimensions
+			.filter((d) => {return !self.db.isStringDimension(d)})
+			.forEach(function(d) {
 			//get filter for this particular dimension 'f'
 			var f = filter ? filter[d] : null
 			if (f && Array.isArray(f) && f.length == 2 && !isNaN(f[0]) && !isNaN(f[1])) {
@@ -696,12 +698,15 @@
 					Math.max(self.y[d](f[1]),0),
 					Math.min(self.y[d](f[0]),self.internalHeight)
 				]
-				self.axisContainer.select('.axisGroup[dimension='+d+']').select('g.brush')
-					.call(self.brush.move, function() {return range;})
+				var brush = self.brushes[d][0].brush
+				self.axisContainer
+					.select('#brush-' + self.originalDimensions.indexOf(d) + '-0')
+					.call(brush)
+					.call(brush.move, function() {return range;});
 			}
 		});
 		//call brush event handler
-		this.updateBrushSelection(); // todo: see how this worked
+		this.updateSelection();
 	}
 
 	/**
