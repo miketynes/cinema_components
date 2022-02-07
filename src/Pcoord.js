@@ -232,11 +232,8 @@
 			// Set brush properties and callbacks
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function() {
-					try {
+					if (d3.event.selection !== null)
 						d3.event.sourceEvent.stopPropagation();
-					} catch {
-						// todo investigate when this happens
-					}
 				})
 				.on('brush', function() {self.updateBrushSelection(dim, id)})
 				.on('end', function() {
@@ -705,7 +702,6 @@
 					.call(brush.move, function() {return range;});
 			}
 		});
-		//call brush event handler
 		this.updateSelection();
 	}
 
