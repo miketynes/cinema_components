@@ -66,9 +66,6 @@
 		this.numeric_dimensions = this.dimensions.filter(function(d) {
 			return !self.db.isStringDimension(d);
 		});
-		this.string_dimensions = this.dimensions.filter(function(d) {
-			return self.db.isStringDimension(d);
-		});
 
 		/** @type {number[]} Indices of the similar results to the last query */
 		this.results = [];
