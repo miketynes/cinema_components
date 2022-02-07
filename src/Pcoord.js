@@ -565,26 +565,31 @@
 		var self = this;
 		var newSelection = [];
 		this.db.data.forEach(function(d, i) {
+			// Assume that each datapoint should be selected.
+			// This will be falsified if it is not included in the brushes
+			// of *all* dims that are brushed.
 			var selected = true;
 			for (var dim of self.dimensions) {
-				if (!self.brushSelections[dim].every(e => e === null)) {
+				var dim_is_brushed = !self.brushSelections[dim].every(e => e === null);
+				if (dim_is_brushed) {
 					var in_any_brush_of_dim = false;
-					for (var selection of self.brushSelections[dim].filter(e => e !== null)) {
+					var dim_selections = self.brushSelections[dim].filter(e => e !== null);
+					for (var selection of dim_selections) {
 						var y = self.getYPosition(dim, d);
-						if (selection) {
-							if (selection[0] <= y && y <= selection[1]) {
-								in_any_brush_of_dim = true;
-								break
-							}
+						in_any_brush_of_dim = selection[0] <= y && y <= selection[1]
+						if (in_any_brush_of_dim) {
+							// no need to continue searching
+							break;
 						}
 					}
 					selected = selected && in_any_brush_of_dim;
 					if (!selected)
-						break
+						// this datapoint has been excluded
+						break;
 				}
 			}
 			if (selected)
-				newSelection.push(i)
+				newSelection.push(i);
 		});
 		if (!arraysEqual(this.selection,newSelection) || force) {
 			this.selection = newSelection;
