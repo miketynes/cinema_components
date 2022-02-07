@@ -274,8 +274,8 @@
 			return brush
 		};
 
+		// Draws DOM elements for the brushes of a given dimension
 		this.drawBrushes = (brushGroup) => {
-			// draw the brushes for a given brushGroup corresponding to a dimension
 			var dim = brushGroup.node().getAttribute('dimension');
 			var brushes = self.brushes[dim];
 		    var brushSelection = brushGroup.selectAll('.brush').data(brushes, d => d.id);
