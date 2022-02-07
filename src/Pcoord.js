@@ -401,7 +401,15 @@
 		}
 		this.brushDOMInit()
 
+		/**
+		After calling, brushes behave as if they were in initial state.
+		 reset brushes for dim if dim is passed, else reset for all dims
+
+		 Note: Old brushes are *not* deleted, but their selections are set to null.
+		 (Deleting them causes strange d3 errors)
+		 */
 		this.brushReset = function(dim) {
+			// dims is always an array to keep code dry
 			var dims;
 			if (dim === undefined) {
 				dims = this.originalDimensions
@@ -410,22 +418,24 @@
 			}
 			dims.forEach((d, pos) => {
 				if (dim !== undefined) {
+					// if dim was not passed as an argument, get its index
 					pos = this.originalDimensions.indexOf(dim)
 				}
 				this.brushes[d].forEach((e, i) => {
-					// dont update the topmost brush
+					// dont update the topmost brush for dim
 					if (i === this.brushes[d].length-1)
 						return
 					const brushElem = document.getElementById('brush-' + pos + '-' + i);
-					var brushSelection = this.axisContainer
-						.select('#brush-' + pos + '-' + i)
-					if (d3.brushSelection(brushElem) !== null){
-						brushSelection
+					if (d3.brushSelection(brushElem) !== null) {
+						// move the d3 brush object to null
+						this.axisContainer
+							.select('#brush-' + pos + '-' + i)
 							.call(e.brush)
 							.call(e.brush.move, null)
+						// make corresponding update to member variable
 						this.brushSelections[d][i] = null
 					}
-				  });
+				});
 		  	});
 		this.updateSelection();
 		}
