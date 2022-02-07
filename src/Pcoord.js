@@ -189,50 +189,57 @@
 		this.brushMemberInit = function() {
 			this.dontUpdateSelectionOnBrush = false;
 		 	this.brushes = {}
-		 	this.brushExtents = {}
+		 	this.brushSelections = {}
 		 	for (var d of self.dimensions){
-		 		this.brushExtents[d] = [];
+		 		this.brushSelections[d] = [];
 		 	}
 		 };
 		 this.brushMemberInit();
 
-		//Brush event handler
-		this.axisBrush = function(d, i) {
-			//If this is called due to an event (as opposed to programatticaly called)
-			//update corresponding brush extent
+		// Brush event handler
+		this.updateBrushSelection = function(d, i) {
+			// If this is called due to an event (as opposed to called by cinema directly)
+			// update corresponding brush selection
 			if (d3.event != null) {
 				var selection = d3.event.selection;
 				if (selection != null && selection[0] === selection[1])
 					selection = null
-				self.brushExtents[d][i] = selection;
+				self.brushSelections[d][i] = selection;
 			}
 			if (!self.dontUpdateSelectionOnBrush)
 				self.updateSelection();
 		}
 
-		/** @type {d3.brushY} The brushes for each axis */
+		/** @type {d3.brushY} Create a new brush object in the brushGroup for a given axis */
 		this.newBrush = function(g){
-			var dim = g.node().getAttribute('dimension');
-			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
-			var node = 'brush-' + self.originalDimensions.indexOf(dim) + '-' + id;
 			var brush = d3.brushY();
+			var dim = g.node().getAttribute('dimension');
+			// brushes for each dimension are identified by an integer index
+			var id = self.brushes[dim] ? self.brushes[dim].length : 0;
+			// the DOM node is identified by 'brush-{dimension_index}-{brush_index}'
+			var node = 'brush-' + self.originalDimensions.indexOf(dim) + '-' + id;
 
+			// update member variables to keep track of brush objects, their ids, DOM nodes, and selections
 			if (self.brushes[dim]) {
 				self.brushes[dim].push({id, brush, node})
 			} else {
 				self.brushes[dim] = [{id, brush, node}]
 			}
-			self.brushExtents[dim][id] = null;
+			self.brushSelections[dim][id] = null;
 
+			// Set brush properties and callbacks
 			brush.extent([[-8,0],[8,self.internalHeight]])
 				.on('start', function() {
 					try {
 						d3.event.sourceEvent.stopPropagation();
-					} catch { }
+					} catch {
+						// todo investigate
+					}
 				})
-				.on('brush', function() {self.axisBrush(dim, id)})
+				.on('brush', function() {self.updateBrushSelection(dim, id)})
 				.on('end', function() {
-				  // Figure out if our latest brush has a selection
+
+					// Figure out if our latest brush has a selection
 				  const lastBrushID = self.brushes[dim][self.brushes[dim].length - 1].id;
 				  const lastBrush = document.getElementById(
 					'brush-' +
@@ -240,6 +247,7 @@
 					  '-' +
 					  lastBrushID
 				  );
+
 				  const selection = d3.brushSelection(lastBrush);
 				  if (
 					selection !== undefined &&
@@ -248,7 +256,7 @@
 				  ) {
 					  self.newBrush(g);
 					  self.drawBrushes(g);
-					  self.axisBrush(dim, id);
+					  self.updateBrushSelection(dim, id);
 				  } else if (
 				  	d3.event.sourceEvent &&
 					  d3.event.sourceEvent.toString() === '[object MouseEvent]' &&
@@ -412,7 +420,7 @@
 						brushSelection
 							.call(e.brush)
 							.call(e.brush.move, null)
-						this.brushExtents[d][i] = null
+						this.brushSelections[d][i] = null
 					}
 				  });
 		  	});
@@ -535,11 +543,11 @@
 					.select('#brush-' + pos + '-' + i)
 					.call(e.brush)
 				if (d3.brushSelection(brushElem) !== null){
-					var old_extents = self.brushExtents[d][i];
-					var new_extents = old_extents.map(function(_) {
+					var old_selections = self.brushSelections[d][i];
+					var new_selections = old_selections.map(function(_) {
 						return _/oldHeight * self.internalHeight;
 					});
-						brushSelection.call(e.brush.move, new_extents)
+						brushSelection.call(e.brush.move, new_selections)
 				}
 			  });
 		  });
@@ -583,12 +591,12 @@
 		this.db.data.forEach(function(d, i) {
 			var selected = true;
 			for (var dim of self.dimensions) {
-				if (!self.brushExtents[dim].every(e => e === null)) {
+				if (!self.brushSelections[dim].every(e => e === null)) {
 					var in_any_brush_of_dim = false;
-					for (var extent of self.brushExtents[dim].filter(e => e !== null)) {
+					for (var selection of self.brushSelections[dim].filter(e => e !== null)) {
 						var y = self.getYPosition(dim, d);
-						if (extent) {
-							if (extent[0] <= y && y <= extent[1]) {
+						if (selection) {
+							if (selection[0] <= y && y <= selection[1]) {
 								in_any_brush_of_dim = true;
 								break
 							}
@@ -635,6 +643,15 @@
 	/**
 	 * Set the chart's selection to encapsulate the data represented by
 	 * the given array of indices
+	 *
+	 * For each dimension d:
+	 *   if d is checked in the query pane:
+	 *     if d is a numeric variable:
+	 *       draw one brush corresponding to the slider
+	 *     else if d is a string variable:
+	 *       draw one brush for each member string that matches the regex query
+	 *   else:
+	 *     draw one brush for the entire axis
 	 */
 	CINEMA_COMPONENTS.Pcoord.prototype.setSelection = function(selection) {
 		var ranges = {};
@@ -648,13 +665,8 @@
 				var lastIx = self.brushes[d].length - 1;
 				var brush = self.brushes[d][lastIx].brush
 				var newPos = [ranges[d][0]-5, ranges[d][1]+5];
-				self.brushExtents[d][lastIx] = newPos;
+				self.brushSelections[d][lastIx] = newPos;
 				self.axisContainer
-					/*
-					We are assuming there will only be one brush for numeric variables
-					when set selection is called
-					and its the last one
-					 */
 					.select('#brush-' + pos + '-' + lastIx)
 					.call(brush)
 					.call(brush.move, newPos)
@@ -670,7 +682,7 @@
 					var lastIx = self.brushes[d].length - 1;
 					var brush = self.brushes[d][lastIx].brush
 					var newPos = [y-pad, y+pad];
-					self.brushExtents[d][lastIx] = newPos;
+					self.brushSelections[d][lastIx] = newPos;
 					self.axisContainer
 						.select('#brush-' + pos + '-' + lastIx)
 						.call(brush)
@@ -708,7 +720,7 @@
 			}
 		});
 		//call brush event handler
-		this.axisBrush(); // todo: see how this worked
+		this.updateBrushSelection(); // todo: see how this worked
 	}
 
 	/**
